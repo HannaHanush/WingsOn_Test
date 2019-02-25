@@ -10,8 +10,6 @@ namespace WingsOn.Infrastructure.Interfaces
 
         List<PassengerDto> GetPassengers(GetPassengersRequest getPassengersRequest);
 
-        List<PassengerDto> GetFlightPassengers(string flightNumber);
-
         UpdatePassengerResponse UpdatePassenger(UpdatePassengerRequest updatePassengerRequest);
     }
 }

@@ -54,18 +54,9 @@ namespace WingsOn.Infrastructure.Services
             return _mapper.Map<List<Person>, List<PassengerDto>>(passengers);
         }
 
-        public List<PassengerDto> GetFlightPassengers(string flightNumber)
-        {
-            var flightPassengers = PrepareFlightPassengers(flightNumber);
-            return _mapper.Map<List<Person>, List<PassengerDto>>(flightPassengers);
-        }
-
         public UpdatePassengerResponse UpdatePassenger(UpdatePassengerRequest updatePassengerRequest)
         {
-            var response = new UpdatePassengerResponse
-            {
-                IsSuccessful = true
-            };
+            var response = new UpdatePassengerResponse { IsSuccessful = true };
 
             try
             {

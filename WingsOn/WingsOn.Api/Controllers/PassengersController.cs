@@ -29,7 +29,7 @@ namespace WingsOn.Api.Controllers
                 return NotFound("Passenger with speicified ID is not found.");
             }
 
-            return passenger;
+            return Ok(passenger);
         }
 
         [HttpGet]
@@ -44,7 +44,7 @@ namespace WingsOn.Api.Controllers
                     return NotFound("Passengers are not found.");
                 }
 
-                return passengers;
+                return Ok(passengers);
             }
             catch (Exception e)
             {

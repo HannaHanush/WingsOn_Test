@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using WingsOn.Api.Models.Passenger;
 using WingsOn.Infrastructure.Interfaces;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -23,7 +24,8 @@ namespace WingsOn.Api.Controllers
         {
             try
             {
-                var passengers = _passengerService.GetFlightPassengers(flightNumber);
+                var getPassengersRequest = new GetPassengersRequest { FlightNumber = flightNumber };
+                var passengers = _passengerService.GetPassengers(getPassengersRequest);
 
                 if (passengers == null)
                 {
