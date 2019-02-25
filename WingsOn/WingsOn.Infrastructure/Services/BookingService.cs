@@ -41,12 +41,10 @@ namespace WingsOn.Infrastructure.Services
 
                 _bookingRepository.Save(booking);
 
-                var bookingNumber = _bookingRepository.Get(booking.Id).Number;
-
                 return new CreateBookingResponse
                 {
                     IsSuccessful = true,
-                    BookingNumber = bookingNumber
+                    BookingNumber = booking.Number
                 };
             }
             catch (Exception e)
