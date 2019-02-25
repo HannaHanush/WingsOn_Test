@@ -1,5 +1,6 @@
 ﻿using WingsOn.Dal;
 using Microsoft.Extensions.DependencyInjection;
+using WingsOn.Domain;
 
 namespace WingsOn.Api.ServiceExtensions
 {
@@ -7,9 +8,9 @@ namespace WingsOn.Api.ServiceExtensions
     {
         public static IServiceCollection AddRepositories(this IServiceCollection services)
         {
-            services.AddSingleton<PersonRepository>();
-            services.AddSingleton<BookingRepository>();
-            services.AddSingleton<FlightRepository>();
+            services.AddSingleton<IRepository<Person>, PersonRepository>();
+            services.AddSingleton<IRepository<Booking>, BookingRepository>();
+            services.AddSingleton<IRepository<Flight>, FlightRepository>();
 
             return services;
         }

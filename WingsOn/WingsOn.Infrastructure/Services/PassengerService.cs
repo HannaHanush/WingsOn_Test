@@ -14,12 +14,12 @@ namespace WingsOn.Infrastructure.Services
     {
         private readonly IMapper _mapper;
 
-        private readonly PersonRepository _personRepository;
-        private readonly BookingRepository _bookingRepository;
-        private readonly FlightRepository _flightRepository;
+        private readonly IRepository<Person> _personRepository;
+        private readonly IRepository<Booking> _bookingRepository;
+        private readonly IRepository<Flight> _flightRepository;
 
 
-        public PassengerService(IMapper mapper, PersonRepository personRepository, BookingRepository bookingRepository, FlightRepository flightRepository)
+        public PassengerService(IMapper mapper, IRepository<Person> personRepository, IRepository<Booking> bookingRepository, IRepository<Flight> flightRepository)
         {
             _mapper = mapper;
 
