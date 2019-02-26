@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using WingsOn.Api.Models.Passenger;
@@ -39,7 +40,7 @@ namespace WingsOn.Api.Controllers
             {
                 var passengers = _passengerService.GetPassengers(getPassengersRequest);
 
-                if (passengers == null)
+                if (passengers == null || !passengers.Any())
                 {
                     return NotFound("Passengers are not found.");
                 }

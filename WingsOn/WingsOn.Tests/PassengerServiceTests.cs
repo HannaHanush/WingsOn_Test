@@ -2,8 +2,11 @@ using Moq;
 using System;
 using AutoMapper;
 using WingsOn.Dal;
+using System.Linq;
 using WingsOn.Domain;
 using NUnit.Framework;
+using System.Collections.Generic;
+using WingsOn.Api.Models.Passenger;
 using WingsOn.Infrastructure.Services;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -23,6 +26,7 @@ namespace Tests
             var person = new Person { Id = 1, Name = "Test", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" };
             var passenger = new PassengerDto { Name = "Test", DateBirth = DateTime.Now.Date, Gender = Gender.Male, Address = "TestAddress", Email = "email@email.com" };
 
+            Mapper.Reset();
             Mapper.Initialize(cfg => cfg.CreateMap<Person, PassengerDto>());
 
             var mockPersonRepository = new Mock<IRepository<Person>>();
@@ -42,6 +46,129 @@ namespace Tests
             Assert.AreEqual(expectedPassenger.DateBirth, passenger.DateBirth);
             Assert.AreEqual(expectedPassenger.Email, passenger.Email);
             Assert.AreEqual(expectedPassenger.Gender, passenger.Gender);
+        }
+
+        [Test]
+        public void Get_WhenIncorrectData_ShouldReturnNull()
+        {
+            // Arrange 
+            var person = new Person { Id = 1, Name = "Test", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" };
+
+            Mapper.Reset();
+            Mapper.Initialize(cfg => cfg.CreateMap<Person, PassengerDto>());
+
+            var mockPersonRepository = new Mock<IRepository<Person>>();
+            var mockBookingRepository = new Mock<IRepository<Booking>>();
+            var mockFlightRepository = new Mock<IRepository<Flight>>();
+
+            mockPersonRepository.Setup(x => x.Get(It.Is<int>(m => m == person.Id))).Returns((Person)null);
+
+            var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
+
+            // Act 
+            var expectedPassenger = passengerService.GetPassengerById(person.Id);
+
+            // Assert
+            Assert.IsNull(expectedPassenger);
+        }
+
+        [Test]
+        public void GetAll_WhenNoPassengers_ShouldReturnEmptyList()
+        {
+            // Arrange
+            var getPassengersRequest = new GetPassengersRequest();
+
+            Mapper.Reset();
+            Mapper.Initialize(cfg => cfg.CreateMap<Person, PassengerDto>());
+
+            var mockPersonRepository = new Mock<IRepository<Person>>();
+            var mockBookingRepository = new Mock<IRepository<Booking>>();
+            var mockFlightRepository = new Mock<IRepository<Flight>>();
+
+            mockPersonRepository.Setup(x => x.GetAll()).Returns((IEnumerable<Person>)null);
+
+            var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
+
+            // Act 
+            var passengers = passengerService.GetPassengers(getPassengersRequest);
+
+            // Assert
+            Assert.IsEmpty(passengers);
+        }
+
+        [Test]
+        public void GetAll_WhenGenderIsSet_ShouldReturnPassengersByGender()
+        {
+            // Arrange
+            var getPassengersRequest = new GetPassengersRequest
+            {
+                Gender = Gender.Male
+            };
+
+            var passengersByGender = new List<Person>
+            { 
+                new Person { Id = 1, Name = "Test1", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" },
+                new Person { Id = 2, Name = "Test2", DateBirth = DateTime.Now.Date, Gender = GenderType.Female, Address = "TestAddress", Email = "email@email.com" },
+                new Person { Id = 3, Name = "Test3", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" }
+            };
+
+            Mapper.Reset();
+            Mapper.Initialize(cfg => cfg.CreateMap<Person, PassengerDto>());
+
+            var malePassengers = Mapper.Map<List<Person>, List<PassengerDto>>(passengersByGender.Where(pas => pas.Gender == GenderType.Male).ToList());
+
+            var mockPersonRepository = new Mock<IRepository<Person>>();
+            var mockBookingRepository = new Mock<IRepository<Booking>>();
+            var mockFlightRepository = new Mock<IRepository<Flight>>();
+
+            mockPersonRepository.Setup(x => x.GetAll()).Returns(passengersByGender);
+
+            var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
+
+            // Act 
+            var passengers = passengerService.GetPassengers(getPassengersRequest);
+
+            // Assert
+            Assert.AreEqual(malePassengers.Count, passengers.Count);
+            Assert.AreEqual(malePassengers.Select(pas => pas.Name).ToList(), passengers.Select(pas => pas.Name).ToList());
+        }
+
+        [Test]
+        public void Update_WhenCorrectData_ShouldUpdatePassengerAddressAndReturnSuccessfulResponse()
+        {
+            // Arrange
+            var newAddress = "New Address";
+            var passengers = new List<Person>
+            {
+                new Person { Id = 1, Name = "Test1", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" },
+                new Person { Id = 2, Name = "Test2", DateBirth = DateTime.Now.Date, Gender = GenderType.Female, Address = "TestAddress", Email = "email@email.com" },
+                new Person { Id = 3, Name = "Test3", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" }
+            };
+
+            var updatedPassenger = new PassengerDto { Name = "Test1", DateBirth = DateTime.Now.Date, Gender = Gender.Male, Address = newAddress, Email = "email@email.com" };
+
+            var updatePassengerRequest = new UpdatePassengerRequest
+            {
+                PassengerId = 1,
+                Passenger = updatedPassenger
+            };
+
+            Mapper.Reset();
+            Mapper.Initialize(cfg => cfg.CreateMap<PassengerDto, Person>());
+
+            var mockPersonRepository = new Mock<IRepository<Person>>();
+            var mockBookingRepository = new Mock<IRepository<Booking>>();
+            var mockFlightRepository = new Mock<IRepository<Flight>>();
+
+            mockPersonRepository.Setup(x => x.GetAll()).Returns(passengers);
+
+            var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
+
+            // Act 
+            var updateResponse = passengerService.UpdatePassenger(updatePassengerRequest);
+
+            // Assert
+            Assert.IsTrue(updateResponse.IsSuccessful);
         }
     }
 }
