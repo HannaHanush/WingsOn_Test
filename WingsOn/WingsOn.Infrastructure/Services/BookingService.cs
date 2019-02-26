@@ -29,7 +29,9 @@ namespace WingsOn.Infrastructure.Services
 
         public BookingDto GetBookingByNumber(string bookingNumber)
         {
-            var bookingByNumber = _bookingRepository.GetAll()?.FirstOrDefault(booking => booking.Number == bookingNumber);
+            var bookings = _bookingRepository.GetAll();
+            var bookingByNumber = bookings != null && bookings.Any() ? bookings.FirstOrDefault(booking => booking.Number == bookingNumber) : null;
+
             return _mapper.Map<Booking, BookingDto>(bookingByNumber);
         }
 
@@ -59,14 +61,16 @@ namespace WingsOn.Infrastructure.Services
 
         private Booking PrepareBookingDetails(CreateBookingRequest createBookingRequest)
         {
+            var bookings = _bookingRepository.GetAll();
+            var newBookingId = bookings != null && bookings.Any() ? bookings.Max(booking => booking.Id) + 1 : 0;
+
             var passengers = createBookingRequest.Passengers
                 .Select(passenger => new Person() { Name = passenger.Name, DateBirth = passenger.DateBirth, Gender = (GenderType)passenger.Gender, Address = passenger.Address, Email = passenger.Email })
                 .ToList();
 
             UpdateNewBookingPassengers(passengers);
-
-            var newBookingId = _bookingRepository.GetAll().Max(booking => booking.Id) + 1;
-            var flight = _flightRepository.Get(createBookingRequest.FlightId) ?? throw new Exception("Flight with specified ID does not exist."); ;
+            
+            var flight = _flightRepository.Get(createBookingRequest.FlightId) ?? throw new Exception("Flight with specified ID does not exist.");
 
             return new Booking
             {
@@ -81,7 +85,9 @@ namespace WingsOn.Infrastructure.Services
 
         private void UpdateNewBookingPassengers(List<Person> passengers)
         {
-            var lastAvailableId = _personRepository.GetAll().Max(person => person.Id);
+            var bookings = _bookingRepository.GetAll();
+            var lastAvailableId = bookings != null && bookings.Any() ? bookings.Max(person => person.Id) : 0;
+
             foreach (var passenger in passengers)
             {
                 lastAvailableId++;

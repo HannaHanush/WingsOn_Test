@@ -37,6 +37,10 @@ namespace WingsOn.Infrastructure.Services
         public List<PassengerDto> GetPassengers(GetPassengersRequest getPassengersRequest)
         {
             var passengers = _personRepository.GetAll()?.ToList();
+            if (passengers == null || !passengers.Any())
+            {
+                return null;
+            }
 
             if (getPassengersRequest.Gender != null)
             {

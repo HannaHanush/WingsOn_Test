@@ -73,7 +73,7 @@ namespace Tests
         }
 
         [Test]
-        public void GetAll_WhenNoPassengers_ShouldReturnEmptyList()
+        public void GetAll_WhenNoPassengers_ShouldReturnNull()
         {
             // Arrange
             var getPassengersRequest = new GetPassengersRequest();
@@ -93,7 +93,7 @@ namespace Tests
             var passengers = passengerService.GetPassengers(getPassengersRequest);
 
             // Assert
-            Assert.IsEmpty(passengers);
+            Assert.IsNull(passengers);
         }
 
         [Test]
