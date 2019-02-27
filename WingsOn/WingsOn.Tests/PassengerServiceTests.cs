@@ -24,10 +24,11 @@ namespace Tests
         {
             // Arrange 
             var person = new Person { Id = 1, Name = "Test", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" };
-            var passenger = new PassengerDto { Name = "Test", DateBirth = DateTime.Now.Date, Gender = Gender.Male, Address = "TestAddress", Email = "email@email.com" };
 
             Mapper.Reset();
             Mapper.Initialize(cfg => cfg.CreateMap<Person, PassengerDto>());
+
+            var passenger = Mapper.Map<Person, PassengerDto>(person);
 
             var mockPersonRepository = new Mock<IRepository<Person>>();
             var mockBookingRepository = new Mock<IRepository<Booking>>();
@@ -41,6 +42,7 @@ namespace Tests
             var expectedPassenger = passengerService.GetPassengerById(person.Id);
 
             // Assert
+            Assert.AreEqual(expectedPassenger.Id, passenger.Id);
             Assert.AreEqual(expectedPassenger.Name, passenger.Name);
             Assert.AreEqual(expectedPassenger.Address, passenger.Address);
             Assert.AreEqual(expectedPassenger.DateBirth, passenger.DateBirth);
@@ -130,7 +132,7 @@ namespace Tests
 
             // Assert
             Assert.AreEqual(malePassengers.Count, passengers.Count);
-            Assert.AreEqual(malePassengers.Select(pas => pas.Name).ToList(), passengers.Select(pas => pas.Name).ToList());
+            Assert.AreEqual(malePassengers.Select(pas => pas.Id).ToList(), passengers.Select(pas => pas.Id).ToList());
         }
 
         [Test]

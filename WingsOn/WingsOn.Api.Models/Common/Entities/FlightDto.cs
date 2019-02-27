@@ -4,6 +4,8 @@ namespace WingsOn.Api.Models.Common.Entities
 {
     public class FlightDto
     {
+        public int Id { get; set; }
+
         public string Number { get; set; }
 
         public AirlineDto Carrier { get; set; }

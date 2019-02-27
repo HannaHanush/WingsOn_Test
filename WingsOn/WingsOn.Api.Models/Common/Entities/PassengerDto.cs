@@ -4,6 +4,8 @@ namespace WingsOn.Api.Models.Common.Entities
 {
     public class PassengerDto
     {
+        public int Id { get; set; }
+
         public string Name { get; set; }
 
         public DateTime DateBirth { get; set; }
