@@ -5,11 +5,12 @@ using System.Linq;
 using WingsOn.Dal;
 using WingsOn.Domain;
 using NUnit.Framework;
+using WingsOn.Api.Models.Booking;
 using System.Collections.Generic;
+using WingsOn.Api.Models.Passenger;
+using WingsOn.Api.Models.Exceptions;
 using WingsOn.Infrastructure.Services;
 using WingsOn.Api.Models.Common.Entities;
-using WingsOn.Api.Models.Booking;
-using WingsOn.Api.Models.Passenger;
 
 namespace WingsOn.Tests
 {
@@ -52,7 +53,7 @@ namespace WingsOn.Tests
         }
 
         [Test]
-        public void Get_WhenIncorrectData_ShouldReturnNull()
+        public void Get_WhenIncorrectData_ShouldThrowAppropriateException()
         {
             // Arrange 
             var flight = PrepareFlightDetails();
@@ -76,15 +77,13 @@ namespace WingsOn.Tests
 
             var bookingService = new BookingService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
 
-            // Act 
-            var expectedBooking = bookingService.GetBookingByNumber("Not existing number");
-
-            // Assert
-            Assert.IsNull(expectedBooking);
+            // Act & Assert
+            var exception = Assert.Throws<WingsOnNotFoundException>(() => bookingService.GetBookingByNumber("Not existing number"));
+            Assert.AreEqual(exception.Message, "Booking with specified ID is not found.");
         }
 
         [Test]
-        public void Create_WhenCorrectData_ShouldReturnSuccessfulResponse()
+        public void Create_WhenCorrectData_ShouldReturnSuccessfulResponseWithBookingNumber()
         {
             // Arrange 
             var flight = PrepareFlightDetails();
@@ -112,13 +111,11 @@ namespace WingsOn.Tests
             var expectedCreateBookingResponse = bookingService.CreateBooking(createBookingRequest);
 
             // Assert
-            Assert.IsTrue(expectedCreateBookingResponse.IsSuccessful);
             Assert.IsNotNull(expectedCreateBookingResponse.BookingNumber);
-            Assert.IsNull(expectedCreateBookingResponse.ErrorMessage);
         }
 
         [Test]
-        public void Create_WhenFlightDoesNotExsit_ShouldReturnAppropriateUnsuccessfulResponse()
+        public void Create_WhenFlightDoesNotExsit_ShouldThrowAppropriateException()
         {
             // Arrange 
             var expectedErrorMessage = "Flight with specified ID does not exist.";
@@ -144,13 +141,9 @@ namespace WingsOn.Tests
 
             var bookingService = new BookingService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
 
-            // Act 
-            var expectedCreateBookingResponse = bookingService.CreateBooking(createBookingRequest);
-
-            // Assert
-            Assert.IsFalse(expectedCreateBookingResponse.IsSuccessful);
-            Assert.IsNull(expectedCreateBookingResponse.BookingNumber);
-            Assert.AreEqual(expectedCreateBookingResponse.ErrorMessage, expectedErrorMessage);
+            // Act & Assert
+            var exception = Assert.Throws<WingsOnNotFoundException>(() => bookingService.CreateBooking(createBookingRequest));
+            Assert.AreEqual(exception.Message, expectedErrorMessage);
         }
 
         private Flight PrepareFlightDetails()

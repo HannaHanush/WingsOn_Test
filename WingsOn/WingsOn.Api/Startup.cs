@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using AutoMapper;
 using WingsOn.Api.Configure;
+using WingsOn.Api.Infrastructure;
 
 namespace WingsOn.Api
 {
@@ -39,6 +40,8 @@ namespace WingsOn.Api
 
             services.AddRepositories();
             services.AddInfrastructureServices();
+
+            services.AddScoped<WingsOnExceptionFilterAttribute>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

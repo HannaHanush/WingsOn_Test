@@ -7,6 +7,7 @@ using WingsOn.Domain;
 using NUnit.Framework;
 using System.Collections.Generic;
 using WingsOn.Api.Models.Passenger;
+using WingsOn.Api.Models.Exceptions;
 using WingsOn.Infrastructure.Services;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -51,7 +52,7 @@ namespace Tests
         }
 
         [Test]
-        public void Get_WhenIncorrectData_ShouldReturnNull()
+        public void Get_WhenIncorrectData_ShouldThrowAppropriateException()
         {
             // Arrange 
             var person = new Person { Id = 1, Name = "Test", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" };
@@ -67,15 +68,13 @@ namespace Tests
 
             var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
 
-            // Act 
-            var expectedPassenger = passengerService.GetPassengerById(person.Id);
-
-            // Assert
-            Assert.IsNull(expectedPassenger);
+            // Act & Assert
+            var exception = Assert.Throws<WingsOnNotFoundException>(() => passengerService.GetPassengerById(person.Id));
+            Assert.AreEqual(exception.Message, "Passenger with specified ID is not found.");
         }
 
         [Test]
-        public void GetAll_WhenNoPassengers_ShouldReturnNull()
+        public void GetAll_WhenNoPassengers_ShouldThrowAppropriateException()
         {
             // Arrange
             var getPassengersRequest = new GetPassengersRequest();
@@ -91,11 +90,9 @@ namespace Tests
 
             var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
 
-            // Act 
-            var passengers = passengerService.GetPassengers(getPassengersRequest);
-
-            // Assert
-            Assert.IsNull(passengers);
+            // Act & Assert
+            var exception = Assert.Throws<WingsOnNotFoundException>(() => passengerService.GetPassengers(getPassengersRequest));
+            Assert.AreEqual(exception.Message, "Passengers are not found.");
         }
 
         [Test]
@@ -133,44 +130,6 @@ namespace Tests
             // Assert
             Assert.AreEqual(malePassengers.Count, passengers.Count);
             Assert.AreEqual(malePassengers.Select(pas => pas.Id).ToList(), passengers.Select(pas => pas.Id).ToList());
-        }
-
-        [Test]
-        public void Update_WhenCorrectData_ShouldUpdatePassengerAddressAndReturnSuccessfulResponse()
-        {
-            // Arrange
-            var newAddress = "New Address";
-            var passengers = new List<Person>
-            {
-                new Person { Id = 1, Name = "Test1", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" },
-                new Person { Id = 2, Name = "Test2", DateBirth = DateTime.Now.Date, Gender = GenderType.Female, Address = "TestAddress", Email = "email@email.com" },
-                new Person { Id = 3, Name = "Test3", DateBirth = DateTime.Now.Date, Gender = GenderType.Male, Address = "TestAddress", Email = "email@email.com" }
-            };
-
-            var updatedPassenger = new PassengerDto { Name = "Test1", DateBirth = DateTime.Now.Date, Gender = Gender.Male, Address = newAddress, Email = "email@email.com" };
-
-            var updatePassengerRequest = new UpdatePassengerRequest
-            {
-                PassengerId = 1,
-                Passenger = updatedPassenger
-            };
-
-            Mapper.Reset();
-            Mapper.Initialize(cfg => cfg.CreateMap<PassengerDto, Person>());
-
-            var mockPersonRepository = new Mock<IRepository<Person>>();
-            var mockBookingRepository = new Mock<IRepository<Booking>>();
-            var mockFlightRepository = new Mock<IRepository<Flight>>();
-
-            mockPersonRepository.Setup(x => x.GetAll()).Returns(passengers);
-
-            var passengerService = new PassengerService(Mapper.Instance, mockPersonRepository.Object, mockBookingRepository.Object, mockFlightRepository.Object);
-
-            // Act 
-            var updateResponse = passengerService.UpdatePassenger(updatePassengerRequest);
-
-            // Assert
-            Assert.IsTrue(updateResponse.IsSuccessful);
         }
     }
 }

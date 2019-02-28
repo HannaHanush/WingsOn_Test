@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WingsOn.Api.Models.Booking;
+using WingsOn.Api.Infrastructure;
 using WingsOn.Infrastructure.Interfaces;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -7,6 +8,7 @@ namespace WingsOn.Api.Controllers
 {
     [Route("wingsonapi/[controller]")]
     [ApiController]
+    [WingsOnExceptionFilter]
     public class BookingController : Controller
     {
         private readonly IBookingService _bookingService;
@@ -19,27 +21,13 @@ namespace WingsOn.Api.Controllers
         [HttpGet("{bookingNumber}")]
         public ActionResult<BookingDto> Get(string bookingNumber)
         {
-            var booking = _bookingService.GetBookingByNumber(bookingNumber);
-
-            if (booking == null)
-            {
-                return NotFound("Booking with specified number is not found.");
-            }
-
-            return booking;
+            return Ok(_bookingService.GetBookingByNumber(bookingNumber));
         }
 
         [HttpPut]
         public ActionResult<CreateBookingResponse> Put([FromBody] CreateBookingRequest createBookingRequest)
         {
-            var createBookingResponse = _bookingService.CreateBooking(createBookingRequest);
-
-            if (!createBookingResponse.IsSuccessful)
-            {
-                return BadRequest($"Booking creation failed. Error: {createBookingResponse.ErrorMessage}");
-            }
-
-            return Ok(createBookingResponse);
+            return Ok(_bookingService.CreateBooking(createBookingRequest));
         }
     }
 }

@@ -5,6 +5,7 @@ using WingsOn.Dal;
 using WingsOn.Domain;
 using System.Collections.Generic;
 using WingsOn.Api.Models.Booking;
+using WingsOn.Api.Models.Exceptions;
 using WingsOn.Infrastructure.Interfaces;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -32,31 +33,24 @@ namespace WingsOn.Infrastructure.Services
             var bookings = _bookingRepository.GetAll();
             var bookingByNumber = bookings != null && bookings.Any() ? bookings.FirstOrDefault(booking => booking.Number == bookingNumber) : null;
 
+            if (bookingByNumber == null)
+            {
+                throw new WingsOnNotFoundException("Booking with specified ID is not found.");
+            }
+
             return _mapper.Map<Booking, BookingDto>(bookingByNumber);
         }
 
         public CreateBookingResponse CreateBooking(CreateBookingRequest createBookingRequest)
         {
-            try
-            {
-                var booking = PrepareBookingDetails(createBookingRequest);
+            var booking = PrepareBookingDetails(createBookingRequest);
 
-                _bookingRepository.Save(booking);
+            _bookingRepository.Save(booking);
 
-                return new CreateBookingResponse
-                {
-                    IsSuccessful = true,
-                    BookingNumber = booking.Number
-                };
-            }
-            catch (Exception e)
+            return new CreateBookingResponse
             {
-                return new CreateBookingResponse
-                {
-                    IsSuccessful = false,
-                    ErrorMessage = e.Message
-                };
-            }
+                BookingNumber = booking.Number
+            };
         }
 
         private Booking PrepareBookingDetails(CreateBookingRequest createBookingRequest)
@@ -70,7 +64,7 @@ namespace WingsOn.Infrastructure.Services
 
             UpdateNewBookingPassengers(passengers);
             
-            var flight = _flightRepository.Get(createBookingRequest.FlightId) ?? throw new Exception("Flight with specified ID does not exist.");
+            var flight = _flightRepository.Get(createBookingRequest.FlightId) ?? throw new WingsOnNotFoundException("Flight with specified ID does not exist.");
 
             return new Booking
             {

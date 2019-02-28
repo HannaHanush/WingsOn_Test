@@ -1,10 +1,10 @@
-﻿using System;
-using AutoMapper;
+﻿using AutoMapper;
 using System.Linq;
 using WingsOn.Dal;
 using WingsOn.Domain;
 using System.Collections.Generic;
 using WingsOn.Api.Models.Passenger;
+using WingsOn.Api.Models.Exceptions;
 using WingsOn.Infrastructure.Interfaces;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -30,7 +30,7 @@ namespace WingsOn.Infrastructure.Services
 
         public PassengerDto GetPassengerById(int id)
         {
-            var passenger = _personRepository.Get(id);
+            var passenger = _personRepository.Get(id) ?? throw new WingsOnNotFoundException("Passenger with specified ID is not found.");
             return _mapper.Map<Person, PassengerDto>(passenger);
         }
 
@@ -39,7 +39,7 @@ namespace WingsOn.Infrastructure.Services
             var passengers = _personRepository.GetAll()?.ToList();
             if (passengers == null || !passengers.Any())
             {
-                return null;
+                throw new WingsOnNotFoundException("Passengers are not found.");
             }
 
             if (getPassengersRequest.Gender != null)
@@ -58,35 +58,27 @@ namespace WingsOn.Infrastructure.Services
             return _mapper.Map<List<Person>, List<PassengerDto>>(passengers);
         }
 
-        public UpdatePassengerResponse UpdatePassenger(UpdatePassengerRequest updatePassengerRequest)
+        public void UpdatePassenger(UpdatePassengerRequest updatePassengerRequest)
         {
-            var response = new UpdatePassengerResponse { IsSuccessful = true };
+            var passenger = GetPassengerById(updatePassengerRequest.PassengerId);
 
-            try
-            {
-                var updatedPerson = _mapper.Map<PassengerDto, Person>(updatePassengerRequest.Passenger, opt =>
+            updatePassengerRequest.PassengerPatch.ApplyTo(passenger);
+
+            var updatedPerson = _mapper.Map<PassengerDto, Person>(passenger, opt =>
                     opt.AfterMap((src, dest) => dest.Id = updatePassengerRequest.PassengerId));
 
-                _personRepository.Save(updatedPerson);
-            }
-            catch (Exception e)
-            {
-                response.IsSuccessful = false;
-                response.ErrorMessage = e.Message;
-            }
-
-            return response;
+            _personRepository.Save(updatedPerson);
         }
 
         private List<Person> PrepareFlightPassengers(string flightNumber)
         {
             var flightId = _flightRepository.GetAll()?.FirstOrDefault(flight => flight.Number == flightNumber)?.Id
-                ?? throw new Exception("Flight with specified number does not exist.");
+                ?? throw new WingsOnNotFoundException("Flight with specified number does not exist.");
 
             var bookings = _bookingRepository.GetAll()?.Where(booking => booking.Flight.Id == flightId)?.ToList();
             if (bookings == null || !bookings.Any())
             {
-                throw new Exception("Booking with specified flight number is not found.");
+                throw new WingsOnNotFoundException("Booking with specified flight number is not found.");
             }
 
             return bookings.SelectMany(booking => booking.Passengers)?.ToList();

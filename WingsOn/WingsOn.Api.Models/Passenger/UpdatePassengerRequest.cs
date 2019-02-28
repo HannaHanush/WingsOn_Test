@@ -1,4 +1,5 @@
-﻿using WingsOn.Api.Models.Common.Entities;
+﻿using Microsoft.AspNetCore.JsonPatch;
+using WingsOn.Api.Models.Common.Entities;
 
 namespace WingsOn.Api.Models.Passenger
 {
@@ -6,6 +7,6 @@ namespace WingsOn.Api.Models.Passenger
     {
         public int PassengerId { get; set; }
 
-        public PassengerDto Passenger { get; set; }
+        public JsonPatchDocument<PassengerDto> PassengerPatch;
     }
 }
