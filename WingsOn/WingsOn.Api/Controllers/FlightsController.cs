@@ -21,7 +21,7 @@ namespace WingsOn.Api.Controllers
         }
 
         [HttpGet]
-        [Route("GetFlightPassengers/{flightNumber}")]
+        [Route("{flightNumber}/Passengers")]
         public ActionResult<List<PassengerDto>> GetFlightPassengers(string flightNumber)
         {
             var getPassengersRequest = new GetPassengersRequest { FlightNumber = flightNumber };

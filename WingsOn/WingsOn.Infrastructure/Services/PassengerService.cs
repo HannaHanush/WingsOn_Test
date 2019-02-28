@@ -5,6 +5,7 @@ using WingsOn.Domain;
 using System.Collections.Generic;
 using WingsOn.Api.Models.Passenger;
 using WingsOn.Api.Models.Exceptions;
+using Microsoft.AspNetCore.JsonPatch;
 using WingsOn.Infrastructure.Interfaces;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -58,14 +59,14 @@ namespace WingsOn.Infrastructure.Services
             return _mapper.Map<List<Person>, List<PassengerDto>>(passengers);
         }
 
-        public void UpdatePassenger(UpdatePassengerRequest updatePassengerRequest)
+        public void UpdatePassenger(int passengerId, JsonPatchDocument<PassengerDto> passengerPatch)
         {
-            var passenger = GetPassengerById(updatePassengerRequest.PassengerId);
+            var passenger = GetPassengerById(passengerId);
 
-            updatePassengerRequest.PassengerPatch.ApplyTo(passenger);
+            passengerPatch.ApplyTo(passenger);
 
             var updatedPerson = _mapper.Map<PassengerDto, Person>(passenger, opt =>
-                    opt.AfterMap((src, dest) => dest.Id = updatePassengerRequest.PassengerId));
+                    opt.AfterMap((src, dest) => dest.Id = passengerId));
 
             _personRepository.Save(updatedPerson);
         }

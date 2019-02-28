@@ -2,6 +2,7 @@
 using WingsOn.Api.Infrastructure;
 using System.Collections.Generic;
 using WingsOn.Api.Models.Passenger;
+using Microsoft.AspNetCore.JsonPatch;
 using WingsOn.Infrastructure.Interfaces;
 using WingsOn.Api.Models.Common.Entities;
 
@@ -31,10 +32,10 @@ namespace WingsOn.Api.Controllers
             return Ok(_passengerService.GetPassengers(getPassengersRequest));
         }
 
-        [HttpPatch]
-        public ActionResult Patch([FromBody] UpdatePassengerRequest updatePassengerRequest)
+        [HttpPatch("{id}")]
+        public ActionResult Patch(int id, [FromBody]JsonPatchDocument<PassengerDto> passengerPatch)
         {
-            _passengerService.UpdatePassenger(updatePassengerRequest);
+            _passengerService.UpdatePassenger(id, passengerPatch);
             return Ok();
         }
     }
