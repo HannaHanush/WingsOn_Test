@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using WingsOn.Api.Configure;
+using Microsoft.AspNetCore.Mvc;
+using WingsOn.Api.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using WingsOn.Api.ServiceExtensions;
 using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using AutoMapper;
-using WingsOn.Api.Configure;
-using WingsOn.Api.Infrastructure;
 
 namespace WingsOn.Api
 {

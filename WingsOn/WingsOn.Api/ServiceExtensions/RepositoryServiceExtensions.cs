@@ -1,6 +1,6 @@
 ﻿using WingsOn.Dal;
-using Microsoft.Extensions.DependencyInjection;
 using WingsOn.Domain;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WingsOn.Api.ServiceExtensions
 {
